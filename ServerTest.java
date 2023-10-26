@@ -19,7 +19,7 @@ public class ServerTest {
 
             // Generate packets and store them
             List<String> packets = new ArrayList<>();
-            for (int packetNumber = 1; packetNumber <= totalPackets-1; packetNumber++) {
+            for (int packetNumber = 1; packetNumber <= totalPackets - 1; packetNumber++) {
                 String packet = createPacket(packetNumber, totalPackets);
                 packets.add(packet);
                 if (random.nextDouble() < 0.8) {
@@ -33,8 +33,12 @@ public class ServerTest {
             String endPacket = createPacket(totalPackets, totalPackets);
             out.println(endPacket);
             System.out.println("Sent (End): " + endPacket);
-            while (true) {
-                // Handle missing packet requests from the client
+
+            long startTime = System.currentTimeMillis();
+            long timeout = 5000; // Set a timeout (5 seconds) - adjust as needed
+
+            while (System.currentTimeMillis() - startTime < timeout) {
+                // Check if there's a request from the client
                 String request = in.readLine();
                 if (request != null && request.startsWith("REQUEST:")) {
                     int missingPacket = Integer.parseInt(request.substring("REQUEST:".length()));
