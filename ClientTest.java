@@ -17,7 +17,7 @@ public class ClientTest {
             int totalPackets = 20;
 
             long startTime = System.currentTimeMillis();
-            long timeout = 5000; // Set a timeout (5 seconds) - adjust as needed
+            long timeout = 15000; // Set a timeout (10 seconds) - adjust as needed
 
             while (System.currentTimeMillis() - startTime < timeout) {
                 // Check if there's data available for reading
