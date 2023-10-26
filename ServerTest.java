@@ -35,23 +35,27 @@ public class ServerTest {
             System.out.println("Sent (End): " + endPacket);
 
             long startTime = System.currentTimeMillis();
-            long timeout = 5000; // Set a timeout (5 seconds) - adjust as needed
+            long timeout = 20000; // Set a timeout (15 seconds) - adjust as needed
+            Set<Integer> receivedPackets = new HashSet<>();
 
-            while (System.currentTimeMillis() - startTime < timeout) {
+            while (System.currentTimeMillis() - startTime < timeout && receivedPackets.size() < totalPackets) {
                 // Check if there's a request from the client
                 String request = in.readLine();
                 if (request != null && request.startsWith("REQUEST:")) {
                     int missingPacket = Integer.parseInt(request.substring("REQUEST:".length()));
 
-                    if (missingPacket >= 1 && missingPacket <= totalPackets) {
-                        String missingPacketData = packets.get(missingPacket - 1);
+                    if(missingPacket >= 1 && missingPacket <= totalPackets) {
+                        String missingPacketData = createPacket(missingPacket, totalPackets);
 
                         // Simulate packet loss with 20% probability when resending
-                        if (random.nextDouble() < 0.8) {
+                        if (!receivedPackets.contains(missingPacket) && Math.random() < 0.8) {
                             out.println(missingPacketData); // Send the missing packet directly
+                            receivedPackets.add(missingPacket);
                             System.out.println("Resent (with drop probability): " + missingPacketData);
+                        
                         }
                     }
+                           
                 }
             }
 
