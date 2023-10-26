@@ -3,9 +3,10 @@ package ss;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Random;
 
 public class ClientTest {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         try (Socket socket = new Socket("localhost", 12349);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -29,19 +30,17 @@ public class ClientTest {
                     }
                 } else {
                     // No data available, wait for a short time before checking again
-                    Thread.sleep(100); // Sleep for 100 milliseconds (adjust as needed)
+                    Thread.sleep(50); // Sleep for 50 milliseconds (adjust as needed)
                 }
             }
 
-
-                if (receivedPackets.size() == totalPackets) {
-                    System.out.println(" All packets have been received.");
-                    
-            
+            if (receivedPackets.size() == totalPackets) {
+                System.out.println("All packets have been received.");
             } else {
                 for (int i = 1; i <= totalPackets; i++) {
                     if (!receivedPackets.containsKey(i)) {
                         missingPackets.add(i);
+                        System.out.print("Missing: " + i + "\n");
                     }
                 }
                 System.out.println("Not all packets were received.");
@@ -52,14 +51,19 @@ public class ClientTest {
                 }
 
                 // Handle missing packet responses from the server
-                for (int missingPacket : missingPackets) {
+                while (!missingPackets.isEmpty()) {
                     String response = in.readLine();
-                    if (response != null && response.startsWith("MISSING:" + missingPacket)) {
-                        String packetData = response.substring(("MISSING:" + missingPacket).length() + 1);
-                        receivedPackets.put(missingPacket, packetData);
+                    if (response != null && response.startsWith("MISSING:")) {
+                        String[] parts = response.split("\\|");
+                        if (parts.length == 2) {
+                            int packetNumber = Integer.parseInt(parts[0].substring("MISSING:".length()));
+                            String packetData = parts[1];
+                            receivedPackets.put(packetNumber, packetData);
+                            missingPackets.remove(packetNumber);
+                        }
                     }
                 }
-                
+
                 // Check if all packets have been received after handling missing packets
                 if (receivedPackets.size() == totalPackets) {
                     for (int i = 1; i <= totalPackets; i++) {
@@ -67,7 +71,10 @@ public class ClientTest {
                     }
                 }
             }
+
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
