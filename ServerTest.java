@@ -1,11 +1,11 @@
 package ss;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Random;
 
-public class ServerTest {
+public class ServerTest1 {
+		
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(12349)) {
             System.out.println("Server started. Waiting for connections...");
@@ -48,12 +48,14 @@ public class ServerTest {
                         String missingPacketData = createPacket(missingPacket, totalPackets);
 
                         // Simulate packet loss with 20% probability when resending
-                        if (!receivedPackets.contains(missingPacket) && Math.random() < 0.8) {
-                            out.println(missingPacketData); // Send the missing packet directly
-                            receivedPackets.add(missingPacket);
-                            System.out.println("Resent (with drop probability): " + missingPacketData);
+                        if (!receivedPackets.contains(missingPacket)){
+                        		if(random.nextDouble() < 0.8) {
+	                        	out.println("MISSING:" + missingPacket + "|" + missingPacketData); // Send the missing packet directly
+	                            receivedPackets.add(missingPacket);
+	                            System.out.println("Resent (with drop probability): " + missingPacketData);
+                        		}
+	                        }
                         
-                        }
                     }
                            
                 }
@@ -66,5 +68,5 @@ public class ServerTest {
 
     private static String createPacket(int packetNumber, int totalPackets) {
         return String.format("%d|%d Packet Data", packetNumber, totalPackets);
-    }
+	    }
 }
