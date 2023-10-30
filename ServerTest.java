@@ -1,11 +1,10 @@
 package ss;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.Random;
 
-public class ServerTest1 {
-		
+public class ServerTest2 {
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(12349)) {
             System.out.println("Server started. Waiting for connections...");
@@ -17,25 +16,44 @@ public class ServerTest1 {
             Random random = new Random();
             int totalPackets = 20;
 
-            // Generate packets and store them
-            List<String> packets = new ArrayList<>();
-            for (int packetNumber = 1; packetNumber <= totalPackets - 1; packetNumber++) {
-                String packet = createPacket(packetNumber, totalPackets);
-                packets.add(packet);
-                if (random.nextDouble() < 0.8) {
-                    // Simulate packet loss with 20% probability
-                    out.println(packet);
-                    System.out.println("Sent: " + packet);
-                }
+            // Define an array of 20 words
+            String[] words = {
+                "This", "project", "was", "worked", "on",
+                "by", "Shana", "and", "Miriam.", "It",
+                "took", "days", "to", "finish", "but",
+                "boruch", "hashem", "we", "did", "it!"
+            };
+            Map<String, Integer> wordIndexMap = new HashMap<>();
+            for (int i = 0; i < words.length; i++) {
+                wordIndexMap.put(words[i], i);
             }
 
+            // Shuffle the array
+            List<String> wordList = Arrays.asList(words);
+            Collections.shuffle(wordList);
+            words = wordList.toArray(new String[0]);
+
+            // Generate packets and store them
+            List<String> packets = new ArrayList<>();
+            
+            // Send packets containing individual words
+            for (int packetNumber = 1; packetNumber <= totalPackets-1; packetNumber++) {
+            	 String word = words[packetNumber - 1];
+            	 String packet = createPacket(packetNumber, totalPackets, words[packetNumber-1], wordIndexMap.get(word) );
+                 packets.add(packet);
+                 if (random.nextDouble() < 0.8) {
+                     // Simulate packet loss with 20% probability
+                     out.println(packet);
+                     System.out.println("Sent: " + packet);
+                 }
+            }
             // Send the final "end" packet
-            String endPacket = createPacket(totalPackets, totalPackets);
+            String endPacket = createPacket(totalPackets, totalPackets, "it!", 19);
             out.println(endPacket);
             System.out.println("Sent (End): " + endPacket);
 
             long startTime = System.currentTimeMillis();
-            long timeout = 20000; // Set a timeout (15 seconds) - adjust as needed
+            long timeout = 30000; // Set a timeout (adjust as needed)
             Set<Integer> receivedPackets = new HashSet<>();
 
             while (System.currentTimeMillis() - startTime < timeout && receivedPackets.size() < totalPackets) {
@@ -43,21 +61,11 @@ public class ServerTest1 {
                 String request = in.readLine();
                 if (request != null && request.startsWith("REQUEST:")) {
                     int missingPacket = Integer.parseInt(request.substring("REQUEST:".length()));
-
-                    if(missingPacket >= 1 && missingPacket <= totalPackets) {
-                        String missingPacketData = createPacket(missingPacket, totalPackets);
-
-                        // Simulate packet loss with 20% probability when resending
-                        if (!receivedPackets.contains(missingPacket)){
-                        		if(random.nextDouble() < 0.8) {
-	                        	out.println("MISSING:" + missingPacket + "|" + missingPacketData); // Send the missing packet directly
-	                            receivedPackets.add(missingPacket);
-	                            System.out.println("Resent (with drop probability): " + missingPacketData);
-                        		}
-	                        }
-                        
+                    if (missingPacket >= 1 && missingPacket <= totalPackets) {
+                        out.println("MISSING:" + missingPacket + "|" + words[missingPacket - 1]);
+                        receivedPackets.add(missingPacket);
+                        System.out.println("Resent: " + missingPacket + " " + words[missingPacket - 1]);
                     }
-                           
                 }
             }
 
@@ -65,8 +73,9 @@ public class ServerTest1 {
             e.printStackTrace();
         }
     }
+    private static String createPacket(int packetNumber, int totalPackets, String words, int index) {
+        return String.format("%d|%d %s %d", packetNumber, totalPackets, words, index);
+    }
 
-    private static String createPacket(int packetNumber, int totalPackets) {
-        return String.format("%d|%d Packet Data", packetNumber, totalPackets);
-	    }
+   
 }
