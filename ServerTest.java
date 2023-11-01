@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class ServerTest2 {
+public class ServerTest {
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(12349)) {
             System.out.println("Server started. Waiting for connections...");
@@ -21,11 +21,11 @@ public class ServerTest2 {
                 "This", "project", "was", "worked", "on",
                 "by", "Shana", "and", "Miriam.", "It",
                 "took", "days", "to", "finish", "but",
-                "boruch", "hashem", "we", "did", "it!"
+                "boruch", "hashem", "we", "did"
             };
             Map<String, Integer> wordIndexMap = new HashMap<>();
             for (int i = 0; i < words.length; i++) {
-                wordIndexMap.put(words[i], i);
+                wordIndexMap.put(words[i], i+1);
             }
 
             // Shuffle the array
@@ -48,7 +48,7 @@ public class ServerTest2 {
                  }
             }
             // Send the final "end" packet
-            String endPacket = createPacket(totalPackets, totalPackets, "it!", 19);
+            String endPacket = createPacket(totalPackets, totalPackets, "it!", 20);
             out.println(endPacket);
             System.out.println("Sent (End): " + endPacket);
 
