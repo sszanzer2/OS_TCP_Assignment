@@ -4,8 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class ClientTest2 {
-    public static void main(String[] args) {
+public class Client {
+	public static void main(String[] args) {
         try (Socket socket = new Socket("localhost", 12349);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -16,7 +16,7 @@ public class ClientTest2 {
             int totalPackets = 20;
 
             long startTime = System.currentTimeMillis();
-            long timeout = 20000; // Set a timeout (adjust as needed)
+            long timeout = 3000; // Set a timeout (adjust as needed)
 
             while (System.currentTimeMillis() - startTime < timeout) {
                 // Check if there's data available for reading
@@ -24,7 +24,7 @@ public class ClientTest2 {
                     String inputLine = in.readLine();
                     if (inputLine != null) {
                         System.out.println("Received: " + inputLine);
-                        int packetNumber = extractPacketNumber(inputLine);
+                        int packetNumber = extractNumberInPacket(inputLine);
                         receivedPackets.put(packetNumber, inputLine);
                     }
                 } else {
@@ -62,14 +62,17 @@ public class ClientTest2 {
                     }
                     String response;
                     while ((response = in.readLine()) != null && response.startsWith("MISSING:")) {
-                        String[] parts = response.substring("MISSING:".length()).split("\\|");
-                        if (parts.length >= 2) {
-                            int packetNumber = Integer.parseInt(parts[0]);
-                            String packetData = parts[1];
-                            receivedPackets.put(packetNumber, packetData);
-                            missingPackets.remove((Integer) packetNumber);
-                            System.out.println("Received resent packet: " + packetNumber + " " + packetData);
-                        }
+                        String[] parts = response.substring("MISSING:".length()).split(" ");
+                        //for(int i = 0; i<parts.length;i++)
+                       // System.out.print(parts[0] + " ");
+                    	String packetNumber = parts[0];
+                        String packetData = parts[1];
+                        int index = Integer.parseInt(parts[2]);
+                        receivedPackets.put(index, packetData);
+                        String [] packetNumberParts = packetNumber.split("|");
+                        missingPackets.remove(Integer.parseInt(packetNumberParts[0]));
+                        System.out.println("Received resent packet: " + packetNumber + " " + packetData + " " + index);
+                       
                     
                 
                 
@@ -78,14 +81,20 @@ public class ClientTest2 {
                     break;
                 	}
                 }
-                    List<Map.Entry<Integer, String>> sortedPackets = new ArrayList<>(receivedPackets.entrySet());
-                    sortedPackets.sort(Comparator.comparingInt(entry -> extractNumberInPacket(entry.getValue())));
-
-
-
-                    for (Map.Entry<Integer, String> entry : sortedPackets) {
-                        System.out.print(entry.getValue() + " ");
+                    //List<Map.Entry<Integer, String>> sortedPackets = new ArrayList<>(receivedPackets.entrySet());
+                    //sortedPackets.sort(Comparator.comparingInt(entry -> extractNumberInPacket(entry.getValue())));
+                    
+                    for(int i = 1; i<receivedPackets.size()+1; i++) {
+                    	if(receivedPackets.containsKey(i)) {
+                    		System.out.print(receivedPackets.get(i) + " ");
+                    	}
                     }
+
+                  /*  int index = 1;
+                    for (Map.Entry<Integer, String> entry : sortedPackets) {
+              
+                        System.out.print(entry.getValue() + " ");
+                    }*/
                 }
             }
         } catch (IOException e) {
@@ -96,7 +105,7 @@ public class ClientTest2 {
     }
 
     private static int extractPacketNumber(String packet) {
-        String[] parts = packet.split("\\|");
+        String[] parts = packet.split(" ");
         if (parts.length >= 1) {
             return Integer.parseInt(parts[0]);
         }
@@ -105,9 +114,8 @@ public class ClientTest2 {
 
     private static int extractNumberInPacket(String packet) {
         String[] parts = packet.split(" ");
-        if (parts.length >= 2) {
-            return Integer.parseInt(parts[0]);
-        }
-        return -1;
+        return Integer.parseInt(parts[2]);
+        
     }
 }
+
