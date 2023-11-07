@@ -3,7 +3,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Server {
+public class ServerTest2 {
 	public static void main(String[] args) {
 	    try (ServerSocket serverSocket = new ServerSocket(12349)) {
 	        System.out.println("Server started. Waiting for connections...");
@@ -61,13 +61,13 @@ public class Server {
 	            if (request != null && request.startsWith("REQUEST:")) {
 	                int missingPacket = Integer.parseInt(request.substring("REQUEST:".length()));
 	                if (missingPacket >= 1 && missingPacket <= totalPackets) {
-	                	 if (random.nextDouble() < 0.8) {
+	                	// if (random.nextDouble() < 0.8) {
 	                    receivedPackets.add(missingPacket);
 	                    String word = words[missingPacket - 1];
 	                    String packet = createPacket(missingPacket, totalPackets, words[missingPacket-1], wordIndexMap.get(word) );
 	                    out.println("MISSING:" + packet);
 	                    System.out.println("Resent: " +  packet);
-	                	 }
+	                	 //}
 	                }
 	            }
 	        }
