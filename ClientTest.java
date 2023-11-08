@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class Client{
+public class ClientTest {
     public static void main(String[] args) {
         try (Socket socket = new Socket("localhost", 12349);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -41,8 +41,8 @@ public class Client{
 
             if (receivedPackets.size() == totalPackets) {
                 System.out.println("All packets have been received.");
-                for (int i = 1; i < receivedPackets.size() + 1; i++) {
-                    if (receivedPackets.containsKey(i)) {
+                for (int i = 1; i < sortedPackets.size() + 1; i++) {
+                    if (sortedPackets.containsKey(i)) {
                         System.out.print(receivedPackets.get(i) + " ");
                     }
                 }
@@ -64,6 +64,8 @@ public class Client{
                     }
 
                     String response;
+                    boolean allPacketsReceived = false; // Flag to track whether all packets have been received
+
                     while ((response = in.readLine()) != null && response.startsWith("MISSING:") && !missingPackets.isEmpty()) {
                         String[] parts = response.substring("MISSING:".length()).split(" ");
                         if (parts.length >= 3) {
@@ -72,25 +74,35 @@ public class Client{
                             int index = Integer.parseInt(parts[2]);
                             int packetKey = Integer.parseInt(packetNumber.split("\\|")[0]);
 
-                            missingPackets.put(packetKey, packetData); // Update the value from null to the resent packet data
-                           //receivedPackets isnt adding to the packetSize correctly so its stuck in an endless loop try to see if you could fix
-                            int beforeSize = receivedPackets.size();
-                            receivedPackets.put(index, packetData);
-                            int afterSize = receivedPackets.size();
-                            System.out.println("ReceivedPackets size before: " + beforeSize);
-                            System.out.println("ReceivedPackets size after: " + afterSize);
-                           
+                            missingPackets.remove(packetKey, packetData); // Update the value from null to the resent packet data
+
+                           // int beforeSize = receivedPackets.size();
+                            receivedPackets.put(packetKey, packetData);
+                            sortedPackets.put(index, packetData);
+                            //int afterSize = receivedPackets.size();
+                            //System.out.println("ReceivedPackets size before: " + beforeSize);
                             System.out.println("Received resent packet: " + packetNumber + " " + packetData + " " + index);
-                        } /*else {
-                            System.out.println("Invalid format for missing packet: " + response);
-                        }*/
-                        System.out.println("Recieved size: " + receivedPackets.size());
-                        if (receivedPackets.size() == totalPackets) {
-                            System.out.println("All packets have been received.");
-                            break;
+                            //System.out.println("ReceivedPackets size after: " + afterSize);
+
+                            if (receivedPackets.size() == totalPackets) {
+                                allPacketsReceived = true;
+                                //System.out.println("All packets have been received.");
+                                break;
+                            }
                         }
                     }
-
+                    // Check if all packets have been received and exit the outer loop
+                    if (allPacketsReceived) {
+                        break;
+                    }
+                }
+            }
+            if (receivedPackets.size() == totalPackets) {
+                System.out.println("All packets have been received.");
+                for (int i = 1; i < sortedPackets.size() + 1; i++) {
+                    if (sortedPackets.containsKey(i)) {
+                        System.out.print(sortedPackets.get(i) + " ");
+                    }
                 }
             }
 
