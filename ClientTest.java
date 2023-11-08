@@ -43,7 +43,7 @@ public class ClientTest {
                 System.out.println("All packets have been received.");
                 for (int i = 1; i < sortedPackets.size() + 1; i++) {
                     if (sortedPackets.containsKey(i)) {
-                        System.out.print(receivedPackets.get(i) + " ");
+                        System.out.print(sortedPackets.get(i) + " ");
                     }
                 }
             } else {
