@@ -47,6 +47,7 @@ public class ClientTest {
                     }
                 }
             } else {
+            	
                 System.out.println("Not all packets were received.");
                 for (int x = 1; x <= totalPackets; x++) {
                     if (!receivedPackets.containsKey(x)) {
@@ -74,7 +75,7 @@ public class ClientTest {
                             int index = Integer.parseInt(parts[2]);
                             int packetKey = Integer.parseInt(packetNumber.split("\\|")[0]);
 
-                            missingPackets.remove(packetKey, packetData); // Update the value from null to the resent packet data
+                            missingPackets.remove(packetKey); // Update the value from null to the resent packet data
 
                            // int beforeSize = receivedPackets.size();
                             receivedPackets.put(packetKey, packetData);
@@ -96,6 +97,7 @@ public class ClientTest {
                         break;
                     }
                 }
+            	
             }
             if (receivedPackets.size() == totalPackets) {
                 System.out.println("All packets have been received.");
